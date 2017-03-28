@@ -1,0 +1,46 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ESP_HTML_02", "ESP_HTML_02.vcxproj", "{60C8FFD6-93D0-423F-8868-2BE0ABFA19C2}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rtcDS3231", "..\..\..\rtcDS3231\rtcDS3231.vcxproj", "{9B8ADA36-CA0B-401A-985B-4575A7F34C73}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dotMatrixWooden", "..\..\..\WoodenLedMatrix\ESP Project\dotMatrixWooden\dotMatrixWooden.vcxproj", "{01B56F4E-D0CB-4E53-B56C-1B71623AA64F}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Advanced", "..\..\..\..\..\..\Documents\Arduino\My Examples\Advanced\Advanced.vcxproj", "{5ECDC1DD-B6A0-4DE2-B16B-25250606C6CC}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ConfigFile", "..\..\..\ConfigFile\ConfigFile.vcxproj", "{DAC8827B-6C39-4242-9512-3337757CDBF6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{60C8FFD6-93D0-423F-8868-2BE0ABFA19C2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{60C8FFD6-93D0-423F-8868-2BE0ABFA19C2}.Debug|Win32.Build.0 = Debug|Win32
+		{60C8FFD6-93D0-423F-8868-2BE0ABFA19C2}.Release|Win32.ActiveCfg = Release|Win32
+		{60C8FFD6-93D0-423F-8868-2BE0ABFA19C2}.Release|Win32.Build.0 = Release|Win32
+		{9B8ADA36-CA0B-401A-985B-4575A7F34C73}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9B8ADA36-CA0B-401A-985B-4575A7F34C73}.Debug|Win32.Build.0 = Debug|Win32
+		{9B8ADA36-CA0B-401A-985B-4575A7F34C73}.Release|Win32.ActiveCfg = Release|Win32
+		{9B8ADA36-CA0B-401A-985B-4575A7F34C73}.Release|Win32.Build.0 = Release|Win32
+		{01B56F4E-D0CB-4E53-B56C-1B71623AA64F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{01B56F4E-D0CB-4E53-B56C-1B71623AA64F}.Debug|Win32.Build.0 = Debug|Win32
+		{01B56F4E-D0CB-4E53-B56C-1B71623AA64F}.Release|Win32.ActiveCfg = Release|Win32
+		{01B56F4E-D0CB-4E53-B56C-1B71623AA64F}.Release|Win32.Build.0 = Release|Win32
+		{5ECDC1DD-B6A0-4DE2-B16B-25250606C6CC}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5ECDC1DD-B6A0-4DE2-B16B-25250606C6CC}.Debug|Win32.Build.0 = Debug|Win32
+		{5ECDC1DD-B6A0-4DE2-B16B-25250606C6CC}.Release|Win32.ActiveCfg = Release|Win32
+		{5ECDC1DD-B6A0-4DE2-B16B-25250606C6CC}.Release|Win32.Build.0 = Release|Win32
+		{DAC8827B-6C39-4242-9512-3337757CDBF6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DAC8827B-6C39-4242-9512-3337757CDBF6}.Debug|Win32.Build.0 = Debug|Win32
+		{DAC8827B-6C39-4242-9512-3337757CDBF6}.Release|Win32.ActiveCfg = Release|Win32
+		{DAC8827B-6C39-4242-9512-3337757CDBF6}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

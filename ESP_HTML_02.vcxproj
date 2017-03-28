@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{60C8FFD6-93D0-423F-8868-2BE0ABFA19C2}</ProjectGuid>
+    <RootNamespace>ESP_HTML_02</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>C:\Users\emi\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src;C:\Users\emi\Documents\Arduino\libraries\Adafruit_NeoPixel;C:\Users\emi\Documents\Arduino\libraries\Time;C:\Users\emi\Documents\Arduino\libraries\NTPClient;C:\Users\emi\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\Wire;C:\Users\emi\Documents\Arduino\libraries\Rtc_by_Makuna\src;C:\Users\emi\Documents\Arduino\libraries\ArduinoJson;C:\Users\emi\Documents\Arduino\libraries\Adafruit_NeoPixel\utility;C:\Users\emi\Documents\Arduino\libraries\ArduinoJson\utility;C:\Users\emi\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src\utility;C:\Users\emi\Documents\Arduino\libraries\NTPClient\utility;C:\Users\emi\Documents\Arduino\libraries\Rtc_by_Makuna\src\utility;C:\Users\emi\Documents\Arduino\libraries\Time\utility;C:\Users\emi\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\Wire\utility;C:\Program Files (x86)\Arduino\libraries;C:\Users\emi\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries;C:\Users\emi\Documents\Arduino\libraries;C:\Users\emi\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266;C:\Users\emi\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\libb64;C:\Users\emi\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\spiffs;C:\Users\emi\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266\umm_malloc;C:\Users\emi\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\variants\nodemcu;C:\Users\emi\Dropbox\projekts\esp8266\wakeUpLight\ESP_HTML_02;C:\Users\emi\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0/tools/sdk/include;C:\Users\emi\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0/tools/sdk/lwip/include;C:\Users\emi\AppData\Local\Temp\VMicroBuilds\ESP_HTML_02\esp8266_nodemcuv2/core;C:\Users\emi\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266;C:\Users\emi\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\variants\nodemcu;C:\Users\emi\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src;C:\Users\emi\Documents\Arduino\libraries\Adafruit_NeoPixel;C:\Users\emi\Documents\Arduino\libraries\Time;C:\Users\emi\Documents\Arduino\libraries\NTPClient;C:\Users\emi\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\Wire;C:\Users\emi\Documents\Arduino\libraries\Rtc_by_Makuna\src;C:\Users\emi\Documents\Arduino\libraries\ArduinoJson;C:\Program Files (x86)\Arduino\libraries;C:\Users\emi\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries;C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\Extensions\kqirnzyv.w5p\Micro Platforms\default\debuggers;C:\Users\emi\Documents\Arduino\libraries;C:\Users\emi\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include\c++\4.8.2;C:\Users\emi\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include\c++\4.8.2\xtensa-lx106-elf;C:\Users\emi\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include;C:\Users\emi\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\lib\gcc\xtensa-lx106-elf\4.8.2\include;C:\Users\emi\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\tools\sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ForcedIncludeFiles>C:\Users\emi\Dropbox\projekts\esp8266\ws2811 html\test\ESP_HTML_02\__vm\.ESP_HTML_02.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <PreprocessorDefinitions>__ESP8266_ESp8266__;__ESP8266_ESP8266__;__ets__;ICACHE_FLASH;F_CPU=80000000L;LWIP_OPEN_SRC;ARDUINO=10608;ARDUINO_ESP8266_NODEMCU;ARDUINO_ARCH_ESP8266;ESP8266;__cplusplus=201103L;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="ESP_HTML_02.ino">
+      <FileType>CppCode</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="wifiPasswords.h" />
+    <ClInclude Include="__vm\.ESP_HTML_02.vsarduino.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
