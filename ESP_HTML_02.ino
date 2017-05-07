@@ -59,11 +59,10 @@ NTPClient timeClient(ntpUDP, "europe.pool.ntp.org", 3600, 60000);
 
 byte my_WiFi_Mode = 0;  // WIFI_STA = 1 = Workstation  WIFI_AP = 2  = Accesspoint
 
-const char * ssid_sta     = "<Your SSID>Jksdkj";
-const char * password_sta = "<Your Password>sdfsdf";
+IPAddress ip(192, 168, 2, 99);  //Node static IP
+IPAddress gateway(192, 168, 2, 1);
+IPAddress subnet(255, 255, 255, 0);
 
-const char * ssid_ap      = "ESP_HTML_02";
-const char * password_ap  = "";    // alternativ :  = "12345678";
 
 WiFiServer server(80);
 WiFiClient client;
@@ -100,8 +99,21 @@ byte Datum_MM = 2;
 int Datum_JJJJ = 2016;
 
 bool alarmIsSet = false;
+bool dimFinished = true;
+
 
 int alarmColorRed, alarmColorGreen, alarmColorBlue;
+double m_curretColorValue[3] = {0, 0, 0};
+
+
+uint32_t lastDimTime = 0;
+
+int dimSteps = 30;
+int m_currentDimStep = 0;
+
+// dimDuration / steps
+uint32_t dimIntervall; 
+uint32_t dimDuration = 120;
 
 // checkboxen
 char Wochentage_tab[7][3] = {"Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"};
@@ -186,11 +198,74 @@ void loop() {
 
 	  if (currentTime.Hour() == alarmHour & currentTime.Minute() == alarmMinute)
 	  {
+		  //first deactivate the alarmIsSet-trigger 
+		  alarmIsSet = false;
 
-		  Serial.println("ALARM triggered !!");
+		  dimFinished = false;
+		  Serial.println("ALARM triggered !!");		  
+
 	  }
 
   }
+
+  if (dimFinished == false)
+  {
+	  dimLightOn();
+  }
+
+}
+
+
+void dimLightOn()
+{
+
+	RtcDateTime currentTime = rtc.GetDateTime();    //get the time from the RTC
+
+	uint32_t currentTimeSinceEpoch = currentTime.Epoch64Time();
+
+	if (currentTimeSinceEpoch > lastDimTime + dimIntervall)
+	{
+		lastDimTime = currentTimeSinceEpoch;
+
+		
+		m_curretColorValue[0] = m_curretColorValue[0] + (alarmColorRed / dimSteps);
+		m_curretColorValue[1] = m_curretColorValue[1] + (alarmColorGreen / dimSteps);
+		m_curretColorValue[2] = m_curretColorValue[2] + (alarmColorBlue / dimSteps);
+		
+		
+		Serial.println("set new  brightness values:");
+		Serial.print("red: ");
+		Serial.println(m_curretColorValue[0]);
+		Serial.print("green: ");
+		Serial.println(m_curretColorValue[1]);
+		Serial.print("blue: ");
+		Serial.println(m_curretColorValue[2]);
+
+
+
+		if (m_currentDimStep> dimSteps)
+		{
+			dimFinished = true;
+
+			m_currentDimStep = 0;
+
+			m_curretColorValue[0] = 0;
+			m_curretColorValue[1] = 0;
+			m_curretColorValue[2] = 0;
+
+			Serial.println("dimming finished:");
+
+		}
+		else
+		{
+			m_currentDimStep++;
+
+			//set the led-stripe brightnes
+			colorWipe(strip.Color((int)m_curretColorValue[0], (int)m_curretColorValue[1], (int)m_curretColorValue[2]), 200);
+		}
+		
+
+	}
 
 }
 
@@ -204,8 +279,6 @@ void scanWifiNetworks()
 
 	String ssidList[] = { wifiNetworks };
 	String pwList[] = { wifiPassworts };
-	//String ssidList[] = { "ASUS", "kartoffelsalat" };
-	//String pwList[] = { "5220468835767", "dosenfutterdosenfutter" };
 
 
 	Serial.println("scan start");
@@ -271,6 +344,8 @@ void setupWifi(const char * ssid, const char* password)
 
 	Serial.println("Wifi begin:" + retCode);
 
+	WiFi.config(ip, gateway, subnet);
+
 
 	while (WiFi.status() != WL_CONNECTED) {
 		delay(500);
@@ -324,7 +399,7 @@ void WiFi_Start_STA() {
   }
 }
 
-//---------------------------------------------------------------------
+/*
 void WiFi_Start_AP() {
   WiFi.mode(WIFI_AP);   // Accesspoint
   WiFi.softAP(ssid_ap, password_ap);
@@ -339,7 +414,7 @@ void WiFi_Start_AP() {
   Serial.println(myIP);
 #endif
 }
-
+*/
 
 void initFilerSystem()
 {
@@ -453,14 +528,21 @@ void WiFI_Traffic() {
       Serial.print(":");
       Serial.println(Uhrzeit_SS);
 #endif
-
-	  alarmIsSet = true;
-
-	  setAlarm(1, Uhrzeit_HH, Uhrzeit_MM, 0);
-
-
-
+	  
     }
+
+	myIndex = Find_End("DIMDURATION=", HTML_String);
+	if (myIndex >= 0) {
+		Pick_Text(tmp_string, &HTML_String[myIndex], 8);
+	}
+
+	alarmIsSet = true;
+
+	setAlarm(1, Uhrzeit_HH, Uhrzeit_MM, 0);
+
+	colorWipe(strip.Color(0, 0, 0), 5000); // Red
+
+	dimIntervall = dimDuration / 50;
 	/*
     // DATUM=2015-12-31
     myIndex = Find_End("DATUM=", HTML_String);
@@ -500,16 +582,20 @@ void WiFI_Traffic() {
      colorGreen = Pick_Parameter_Zahl("GREEN=", HTML_String);
 	 colorBlue = Pick_Parameter_Zahl("BLUE=", HTML_String);
 
-	Serial.println("red=");
-	Serial.print(colorRed);
+	Serial.print("red=");
+	Serial.println(colorRed);
 
-	Serial.println("green=");
-	Serial.print(colorGreen);
+	Serial.print("green=");
+	Serial.println(colorGreen);
 
-	Serial.println("blue=");
-	Serial.print(colorBlue);
+	Serial.print("blue=");
+	Serial.println(colorBlue);
 
-	colorWipe(strip.Color(colorRed, colorBlue, colorGreen), 50); // Red
+	colorWipe(strip.Color(colorRed, colorBlue, colorGreen), 50);
+
+	alarmColorRed   = colorRed;
+	alarmColorGreen = colorGreen;
+	alarmColorBlue  = colorBlue;
 
   }
 
@@ -607,6 +693,12 @@ void make_HTML01() {
   strcati2( HTML_String, Uhrzeit_SS);
 
   strcat( HTML_String, "\"></td>");
+
+  strcat(HTML_String, "<tr>");
+  strcat(HTML_String, "<td><b>DimDauer</b></td>");
+  strcat(HTML_String, "<td><input type=\"number\"   style= \"width:100px\" name=\"DIMDURATION\" value=\"");
+  strcati2(HTML_String, dimDuration);
+  strcat(HTML_String, "\"></td>");
 
   strcat( HTML_String, "<td><button style= \"width:100px\" name=\"ACTION\" value=\"");
   strcati(HTML_String, ACTION_SET_DATE_TIME);
@@ -989,11 +1081,28 @@ void setRtcTimeFromNTP()
 	if (currentTimeEpoche == 0)
 	{
 		//could't get the time
+		Serial.println("FAILED to set time from NTP  !!!");
 		return;
 	}
 	else
 	{
-		RtcDateTime currentTime = RtcDateTime(year(currentTimeEpoche), month(currentTimeEpoche), day(currentTimeEpoche), hour(currentTimeEpoche), minute(currentTimeEpoche), second(currentTimeEpoche));  //define date and time object
+
+		bool useSummerTime = summertime(year(currentTimeEpoche), month(currentTimeEpoche), day(currentTimeEpoche), hour(currentTimeEpoche), 0);
+
+		int summerTimeAdd;
+
+		if (useSummerTime == true)
+		{
+			Serial.println("use summertime -> + 1h");
+			summerTimeAdd = 1;
+		}
+		else
+		{
+			Serial.println("don't use summertime");
+			summerTimeAdd = 0;
+		}
+
+		RtcDateTime currentTime = RtcDateTime(year(currentTimeEpoche), month(currentTimeEpoche), day(currentTimeEpoche), hour(currentTimeEpoche) + summerTimeAdd, minute(currentTimeEpoche), second(currentTimeEpoche));  //define date and time object
 		rtc.SetDateTime(currentTime);                                  //configure the RTC with object
 
 		//serial time output
@@ -1112,4 +1221,31 @@ time_t tmConvert_t(int YYYY, byte MM, byte DD, byte hh, byte mm, byte ss)
 	tmSet.Minute = mm;
 	tmSet.Second = ss;
 	return makeTime(tmSet);
+}
+
+
+boolean summertime(int year, int month, int day, int hour, byte tzHours)
+// European Daylight Savings Time calculation by "jurs" for German Arduino Forum
+// input parameters: "normal time" for year, month, day, hour and tzHours (0=UTC, 1=MEZ)
+// return value: returns true during Daylight Saving Time, false otherwise
+{
+	static int x1, x2, lastyear; // Zur Beschleunigung des Codes ein Cache für einige statische Variablen
+	static byte lasttzHours;
+	int x3;
+	if (month<3 || month>10) return false; // keine Sommerzeit in Jan, Feb, Nov, Dez
+	if (month>3 && month<10) return true; // Sommerzeit in Apr, Mai, Jun, Jul, Aug, Sep
+	// der nachfolgende Code wird nur für Monat 3 und 10 ausgeführt
+	// Umstellung erfolgt auf Stunde utc_hour=1, in der Zeitzone Berlin entsprechend 2 Uhr MEZ
+	// Es wird ein Cache-Speicher für die Variablen x1 und x2 verwendet, 
+	// dies beschleunigt die Berechnung, wenn sich das Jahr bei Folgeaufrufen nicht ändert
+	// x1 und x2 werden nur neu Berechnet, wenn sich das Jahr bei nachfolgenden Aufrufen ändert
+	if (year != lastyear || tzHours != lasttzHours)
+	{ // Umstellungsbeginn und -ende
+		x1 = 1 + tzHours + 24 * (31 - (5 * year / 4 + 4) % 7);
+		x2 = 1 + tzHours + 24 * (31 - (5 * year / 4 + 1) % 7);
+		lastyear = year;
+		lasttzHours = tzHours;
+	}
+	x3 = hour + 24 * day;
+	if (month == 3 && x3 >= x1 || month == 10 && x3<x2) return true; else return false;
 }
