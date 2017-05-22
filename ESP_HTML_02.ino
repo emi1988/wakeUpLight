@@ -13,10 +13,20 @@
 #include <Wire.h>               //I2C library
 #include <RtcDS3231.h>    //RTC library
 
+#include <ESP8266WebServer.h>
+#include <ESP8266mDNS.h>
+#include <ESP8266HTTPUpdateServer.h>
+
+const char* host = "esp8266-webupdate";
+
+
 #include "FS.h"			//file system
 #include <ArduinoJson.h>
 
 #include "wifiPasswords.h"
+
+//ESP8266WebServer httpServer(80);
+//ESP8266HTTPUpdateServer httpUpdater;
 
 
 
@@ -79,7 +89,7 @@ int Aufruf_Zaehler = 0;
 #define ACTION_OK 1
 #define ACTION_NOTOK 2
 #define ACTION_SET_DATE_TIME 3
-#define ACTION_SET_NAME 4
+#define ACTION_DEAKTIVATE_ALARM 4
 #define ACTION_LIES_AUSWAHL 5
 #define ACTION_LIES_VOLUME 6
 #define ACTION_SET_LIGHT 7
@@ -87,8 +97,8 @@ int Aufruf_Zaehler = 0;
 int action;
 
 // Vor- Nachname
-char Vorname[20] = "B&auml;rbel";
-char Nachname[20] = "von der Waterkant";
+//char Vorname[20] = "B&auml;rbel";
+//char Nachname[20] = "von der Waterkant";
 
 // Uhrzeit Datum
 byte Uhrzeit_HH = 16;
@@ -108,7 +118,7 @@ double m_curretColorValue[3] = {0, 0, 0};
 
 uint32_t lastDimTime = 0;
 
-int dimSteps = 30;
+int dimSteps = 60;
 int m_currentDimStep = 0;
 
 // dimDuration / steps
@@ -166,13 +176,37 @@ void setup() {
 
   rtc.Begin();                     //Starts I2C
 
+  
   setupNTPSync();
-  setRtcTimeFromNTP();
-  delay(500);
+
+  //try to get timt from ntp
+
+  for (int i = 0; i < 5; i++)
+  {
+	  Serial.print("try to get time from ntp. try numer: ");
+	  Serial.println(i);
+
+
+	  if (setRtcTimeFromNTP() == 0)
+	  {
+		  break;
+	  }
+	  delay(500);
+  }
 
   setSyncProvider(getRtcTime);
 
   timeClient.end();
+
+
+  //web update server
+  //MDNS.begin(host);
+
+  //httpUpdater.setup(&httpServer);
+  //httpServer.begin();
+
+  //MDNS.addService("http", "tcp", 80);
+  //Serial.printf("HTTPUpdateServer ready! Open http://%s.local/update in your browser\n", host);
 
 }
 
@@ -181,8 +215,12 @@ void loop() {
 
 	//getRtcTime();
 
+	//web update server
+	//httpServer.handleClient();
+
+
   WiFI_Traffic();
-  delay(1000);
+  delay(500);
 
   if (alarmIsSet == true)
   {
@@ -202,7 +240,9 @@ void loop() {
 		  alarmIsSet = false;
 
 		  dimFinished = false;
-		  Serial.println("ALARM triggered !!");		  
+		  Serial.println("ALARM triggered !!");		
+
+		  lastDimTime = currentTime.Epoch64Time();
 
 	  }
 
@@ -225,12 +265,14 @@ void dimLightOn()
 
 	if (currentTimeSinceEpoch > lastDimTime + dimIntervall)
 	{
-		lastDimTime = currentTimeSinceEpoch;
+		lastDimTime = lastDimTime + dimIntervall;
 
-		
-		m_curretColorValue[0] = m_curretColorValue[0] + (alarmColorRed / dimSteps);
-		m_curretColorValue[1] = m_curretColorValue[1] + (alarmColorGreen / dimSteps);
-		m_curretColorValue[2] = m_curretColorValue[2] + (alarmColorBlue / dimSteps);
+		Serial.println("alarmColorRed / dimSteps:");
+		Serial.println((double)alarmColorRed / (double)dimSteps);
+
+		m_curretColorValue[0] = m_curretColorValue[0] + ((double)alarmColorRed / (double)dimSteps);
+		m_curretColorValue[1] = m_curretColorValue[1] + ((double)alarmColorGreen / (double)dimSteps);
+		m_curretColorValue[2] = m_curretColorValue[2] + ((double)alarmColorBlue / (double)dimSteps);
 		
 		
 		Serial.println("set new  brightness values:");
@@ -261,7 +303,7 @@ void dimLightOn()
 			m_currentDimStep++;
 
 			//set the led-stripe brightnes
-			colorWipe(strip.Color((int)m_curretColorValue[0], (int)m_curretColorValue[1], (int)m_curretColorValue[2]), 200);
+			colorWipe(strip.Color((int)m_curretColorValue[0], (int)m_curretColorValue[1], (int)m_curretColorValue[2]), 20);
 		}
 		
 
@@ -492,6 +534,7 @@ void WiFI_Traffic() {
   //---------------------------------------------------------------------
   action = Pick_Parameter_Zahl("ACTION=", HTML_String);
 
+  /*
   // Vor und Nachname
   if ( action == ACTION_SET_NAME) {
 
@@ -511,6 +554,7 @@ void WiFI_Traffic() {
 #endif
     }
   }
+  */
   // Uhrzeit und Datum
   if ( action == ACTION_SET_DATE_TIME) {
     // UHRZEIT=12%3A35%3A25
@@ -521,7 +565,7 @@ void WiFI_Traffic() {
       Uhrzeit_MM = Pick_N_Zahl(tmp_string, ':', 2);
       Uhrzeit_SS = Pick_N_Zahl(tmp_string, ':', 3);
 #ifdef BGTDEBUG
-      Serial.print("Neue Uhrzeit ");
+      Serial.print("new alarm time received ");
       Serial.print(Uhrzeit_HH);
       Serial.print(":");
       Serial.print(Uhrzeit_MM);
@@ -533,7 +577,13 @@ void WiFI_Traffic() {
 
 	myIndex = Find_End("DIMDURATION=", HTML_String);
 	if (myIndex >= 0) {
-		Pick_Text(tmp_string, &HTML_String[myIndex], 8);
+		Pick_Text(tmp_string, &HTML_String[myIndex], 8);		
+
+		dimDuration = String(tmp_string).toInt();
+
+		Serial.print("new dim duration received ");
+		Serial.println(String(tmp_string).toInt());
+
 	}
 
 	alarmIsSet = true;
@@ -542,7 +592,25 @@ void WiFI_Traffic() {
 
 	colorWipe(strip.Color(0, 0, 0), 5000); // Red
 
-	dimIntervall = dimDuration / 50;
+	//generate a good stepSize
+
+	if (dimSteps < dimDuration)
+	{
+		dimSteps = dimDuration;
+	}
+	
+
+	dimIntervall = dimDuration / dimSteps;
+
+	Serial.println("dimIntervall=dimDuration / dimSteps");
+	Serial.println(dimIntervall);
+	Serial.println(" = ");
+	Serial.println(dimDuration);
+	Serial.println(" / ");
+	Serial.println(dimSteps);
+
+
+
 	/*
     // DATUM=2015-12-31
     myIndex = Find_End("DATUM=", HTML_String);
@@ -564,6 +632,17 @@ void WiFI_Traffic() {
   }
 
 
+
+  if (action == ACTION_DEAKTIVATE_ALARM)
+  {
+	  alarmIsSet = false;
+
+	  Serial.println("alarm deactivated");
+    
+  }
+
+
+  /*
   if ( action == ACTION_LIES_AUSWAHL) {
     Wochentage = 0;
     for (int i = 0; i < 7; i++) {
@@ -576,6 +655,7 @@ void WiFI_Traffic() {
     Wetter = Pick_Parameter_Zahl("WETTER=", HTML_String);
 
   }
+  */
 
   if (action == ACTION_SET_LIGHT) {
      colorRed = Pick_Parameter_Zahl("RED=", HTML_String);
@@ -637,11 +717,11 @@ void make_HTML01() {
   strcpy( HTML_String, "<!DOCTYPE html>");
   strcat( HTML_String, "<html>");
   strcat( HTML_String, "<head>");
-  strcat( HTML_String, "<title>HTML Demo</title>");
+  strcat( HTML_String, "<title>Light control</title>");
   strcat( HTML_String, "</head>");
   strcat( HTML_String, "<body bgcolor=\"#adcede\">");
   strcat( HTML_String, "<font color=\"#000000\" face=\"VERDANA,ARIAL,HELVETICA\">");
-  strcat( HTML_String, "<h1>HTML Demo</h1>");
+  strcat( HTML_String, "<h1>Wakup Llight</h1>");
 
   /*
   //-----------------------------------------------------------------------------------------
@@ -678,7 +758,7 @@ void make_HTML01() {
 
   //-----------------------------------------------------------------------------------------
   // Uhrzeit + Datum
-  strcat( HTML_String, "<h2>Uhrzeit und Datum</h2>");
+  strcat( HTML_String, "<h2>Weckzeit</h2>");
   strcat( HTML_String, "<form>");
   strcat( HTML_String, "<table>");
   set_colgroup(150, 270, 150, 0, 0);
@@ -689,8 +769,10 @@ void make_HTML01() {
   strcati2( HTML_String, Uhrzeit_HH);
   strcat( HTML_String, ":");
   strcati2( HTML_String, Uhrzeit_MM);
-  strcat( HTML_String, ":");
-  strcati2( HTML_String, Uhrzeit_SS);
+  //strcat( HTML_String, ":");
+ // strcati2( HTML_String, Uhrzeit_SS);
+  Serial.print("html site with hour=");
+  Serial.println(Uhrzeit_HH);
 
   strcat( HTML_String, "\"></td>");
 
@@ -699,11 +781,39 @@ void make_HTML01() {
   strcat(HTML_String, "<td><input type=\"number\"   style= \"width:100px\" name=\"DIMDURATION\" value=\"");
   strcati2(HTML_String, dimDuration);
   strcat(HTML_String, "\"></td>");
+  strcat(HTML_String, "</tr>");
 
+  strcat(HTML_String, "<tr>");
   strcat( HTML_String, "<td><button style= \"width:100px\" name=\"ACTION\" value=\"");
   strcati(HTML_String, ACTION_SET_DATE_TIME);
-  strcat( HTML_String, "\">&Uuml;bernehmen</button></td>");
+  strcat( HTML_String, "\">Alarm setzen</button></td>");
   strcat( HTML_String, "</tr>");
+
+  strcat(HTML_String, "<tr>");
+  strcat(HTML_String, "<td><button style= \"width:100px\" name=\"ACTION\" value=\"");
+  strcati(HTML_String, ACTION_DEAKTIVATE_ALARM);
+  strcat(HTML_String, "\">Alarm deaktivieren</button></td>");
+  strcat(HTML_String, "</tr>");
+
+
+  strcat(HTML_String, "<tr>");
+  strcat(HTML_String, "<td>");
+
+  if (alarmIsSet == true)
+  {
+	  strcat(HTML_String, "Alarm gesetzt um:  ");
+	  strcati2(HTML_String, Uhrzeit_HH);
+	  strcat(HTML_String, ":");
+	  strcati2(HTML_String, Uhrzeit_MM);
+	  		 
+  }
+  else
+  {
+	  strcat(HTML_String, "Alarm nicht gesetzt");
+  }
+
+  strcat(HTML_String, "</td>");
+  strcat(HTML_String, "</tr>");
   /*
   strcat( HTML_String, "<tr>");
   strcat( HTML_String, "<td><b>Datum</b></td>");
@@ -796,10 +906,10 @@ void make_HTML01() {
   */
   //-----------------------------------------------------------------------------------------
   // Slider
-  strcat( HTML_String, "<h2>Slider</h2>");
+  strcat( HTML_String, "<h2>Farbeinstellung</h2>");
   strcat( HTML_String, "<form>");
   strcat( HTML_String, "<table>");
-  set_colgroup(150, 270, 150, 0, 0);
+  //set_colgroup(150, 270, 150, 0, 0);
 
   strcat( HTML_String, "<tr>");
   strcat(HTML_String, "<td><b>red</b></td>");
@@ -810,7 +920,10 @@ void make_HTML01() {
   strcat( HTML_String, "\">");
   strcat( HTML_String, "</td>");
 
-  strcat(HTML_String, "<br>");
+  strcat(HTML_String, "/<tr>");
+
+  strcat(HTML_String, "<tr>");
+ // strcat(HTML_String, "<br>");
 
   strcat(HTML_String, "<td><b>green</b></td>");
 
@@ -819,8 +932,11 @@ void make_HTML01() {
   strcati(HTML_String, colorGreen);
   strcat(HTML_String, "\">");
   strcat(HTML_String, "</td>");
+ 
+  strcat(HTML_String, "</tr>");
 
-  strcat(HTML_String, "<br>");
+  strcat(HTML_String, "<tr>");
+  //strcat(HTML_String, "<br>");
   strcat(HTML_String, "<td><b>blue</b></td>");
 
   strcat(HTML_String, "<td>");
@@ -841,6 +957,15 @@ void make_HTML01() {
   strcat( HTML_String, "<FONT SIZE=-1>");
   strcat( HTML_String, "Aufrufz&auml;hler : ");
   strcati(HTML_String, Aufruf_Zaehler);
+  strcat(HTML_String, "<BR>");
+
+  RtcDateTime currentTime = rtc.GetDateTime();    //get the time from the RTC
+
+  strcat(HTML_String, "Eingestellte Uhrzeit bei Seitenaufruf : ");
+  strcati(HTML_String, currentTime.Hour());
+  strcat(HTML_String, ":");
+  strcati(HTML_String, currentTime.Minute());
+
   strcat( HTML_String, "</font>");
   strcat( HTML_String, "</font>");
   strcat( HTML_String, "</body>");
@@ -1066,23 +1191,23 @@ void setupNTPSync()
 
 /*RTC code*/
 
-void setRtcTimeFromNTP()
+int setRtcTimeFromNTP()
 {
 	Serial.println("set rtc time from ntp:");
 
 	timeClient.update();
-
-
+	
 	Serial.println(timeClient.getEpochTime());
-
-
+	
 	time_t currentTimeEpoche = timeClient.getEpochTime();
 
-	if (currentTimeEpoche == 0)
+	int currentYear = year(currentTimeEpoche);
+	//if read time is too smal, a failure occured
+	if (currentYear < 2010)
 	{
 		//could't get the time
 		Serial.println("FAILED to set time from NTP  !!!");
-		return;
+		return -1;
 	}
 	else
 	{
@@ -1121,7 +1246,7 @@ void setRtcTimeFromNTP()
 
 	}
 
-
+	return 0;
 }
 
 time_t getRtcTime()
