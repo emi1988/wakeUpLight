@@ -11,7 +11,9 @@
 #include <WiFiUdp.h>
 #include <NTPClient.h>
 #include <Wire.h>               //I2C library
-#include <RtcDS3231.h>    //RTC library
+#include <RtcDS3231.h>    //RTC 
+#include <ArduinoOTA.h>
+
 
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
@@ -168,6 +170,7 @@ void setup() {
   // WiFi starten
 
   scanWifiNetworks();
+    
 
  // WiFi_Start_STA();
  // if (my_WiFi_Mode == 0) WiFi_Start_AP();
@@ -181,7 +184,7 @@ void setup() {
 
   //try to get timt from ntp
 
-  for (int i = 0; i < 5; i++)
+  for (int i = 0; i <3; i++)
   {
 	  Serial.print("try to get time from ntp. try numer: ");
 	  Serial.println(i);
@@ -217,6 +220,13 @@ void loop() {
 
 	//web update server
 	//httpServer.handleClient();
+
+  //ArduinoOTA.handle();
+
+  //String hostName = ArduinoOTA.getHostname();
+
+  //Serial.print("ota hostname: ");
+  //Serial.println(hostName);
 
 
   WiFI_Traffic();
@@ -372,6 +382,50 @@ void scanWifiNetworks()
 			}
 		}
 	}
+
+	// if no connection is established, generate an AP
+	 
+	if (WiFi.status() != WL_CONNECTED)
+	{
+		WiFi.disconnect();
+
+		WiFi.mode(WIFI_AP);
+
+
+		Serial.print("no saved wifi network aviable so create AP");
+
+		WiFi.softAP("wakeUpLight", "banane");
+
+		WiFi.softAPConfig(ip, ip, subnet);
+
+		IPAddress myIP = WiFi.softAPIP();
+		Serial.print("AP IP address: ");
+		Serial.println(myIP);
+
+		Serial.println("Starting Server");
+		server.begin();
+
+
+	}
+
+	// Start OTA server.
+	//ArduinoOTA.setHostname("wakeUpConfig");
+	//ArduinoOTA.begin();
+
+
+
+	/* did not work
+	if (!MDNS.begin("esp8266")) 
+	{
+		Serial.println("Error setting up MDNS responder!");
+	}
+	else
+	{
+		MDNS.addService("http", "tcp", 80);
+
+		Serial.println("mDNS responder started");
+	}
+	*/
 
 }
 
